@@ -1,0 +1,9 @@
+br\ufrgs\musicatexto\Instrumento.class
+br\ufrgs\musicatexto\Nota.class
+br\ufrgs\musicatexto\ControladorAudio.class
+br\ufrgs\musicatexto\Voz.class
+br\ufrgs\musicatexto\InterfaceUsuario.class
+br\ufrgs\musicatexto\App.class
+br\ufrgs\musicatexto\GerenciadorArquivo.class
+br\ufrgs\musicatexto\MapeadorTextoMusical.class
+br\ufrgs\musicatexto\SequenciaMusical.class

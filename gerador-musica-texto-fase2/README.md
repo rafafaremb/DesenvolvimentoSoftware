@@ -14,11 +14,53 @@ Protótipo em Java para o trabalho prático da disciplina INF01120.
 - Reprodução sonora via MIDI.
 - Exportação da música gerada para arquivo `.mid`.
 
+
 ## Como compilar e rodar
 
 Requisitos:
 - Java 17 ou superior.
 - Maven instalado.
+
+
+# Verificando se o Java está instalado:
+```bash
+java -version
+```
+Se não estiver instalado, baixe em: https://adoptium.net
+
+
+# Instalando o Maven:
+O Maven não vem instalado por padrão no Windows. Verifique se já está disponível:
+```bash
+mvn --version
+```
+Se o comando não for reconhecido, siga um dos métodos abaixo:
+
+Opção 1 — Via extensão do VS Code (recomendado)
+
+Abra o VS Code.
+Instale a extensão Extension Pack for Java (Microsoft).
+Instale a extensão Maven for Java (Microsoft).
+O VS Code detectará o pom.xml automaticamente e exibirá um painel lateral do Maven, onde é possível executar os goals sem usar o terminal.
+
+Opção 2 — Instalação manual
+
+Acesse: https://maven.apache.org/download.cgi
+Baixe o arquivo apache-maven-3.x.x-bin.zip.
+Extraia em um diretório fixo, por exemplo: C:\Program Files\Maven.
+Adicione o Maven ao PATH do sistema:
+
+Pesquise "variáveis de ambiente" no menu Iniciar.
+Em Variáveis do sistema, edite a variável Path.
+Adicione o caminho: C:\Program Files\Maven\apache-maven-3.x.x\bin
+
+Feche e reabra o terminal. Confirme com:
+
+```bash
+mvn --version
+```
+
+## Executando o projeto:
 
 No terminal, dentro da pasta do projeto:
 
