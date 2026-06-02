@@ -62,7 +62,21 @@ mvn --version
 
 ## Executando o projeto:
 
-No terminal, dentro da pasta do projeto:
+O pom.xml está dentro da pasta gerador-musica-texto-fase2. É necessário navegar até ela antes de rodar qualquer comando Maven.
+Se você clonou o repositório, a estrutura de pastas será:
+
+DesenvolvimentoSoftware/
+└── DesenvolvimentoSoftware/
+    └── gerador-musica-texto-fase2/   ← execute os comandos aqui
+        └── pom.xml
+        
+No terminal, navegue até a pasta correta:
+
+```bash
+cd DesenvolvimentoSoftware\gerador-musica-texto-fase2
+```
+
+Em seguida, compile e execute:
 
 ```bash
 mvn clean package
@@ -75,6 +89,8 @@ Ou execute diretamente pela classe:
 mvn clean compile
 mvn exec:java -Dexec.mainClass="br.ufrgs.musicatexto.App"
 ```
+
+⚠️ Se aparecer o erro There is no POM in this directory, significa que você está na pasta errada. Verifique com dir em qual pasta está e ajuste o caminho.
 
 ## Exemplo de entrada
 
