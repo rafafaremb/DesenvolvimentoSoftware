@@ -65,10 +65,7 @@ mvn --version
 O pom.xml está dentro da pasta gerador-musica-texto-fase2. É necessário navegar até ela antes de rodar qualquer comando Maven.
 Se você clonou o repositório, a estrutura de pastas será:
 
-DesenvolvimentoSoftware/
-└── DesenvolvimentoSoftware/
-    └── gerador-musica-texto-fase2/   ← execute os comandos aqui
-        └── pom.xml
+DesenvolvimentoSoftware/DesenvolvimentoSoftware/gerador-musica-texto-fase2/   ← execute os comandos aqui
         
 No terminal, navegue até a pasta correta:
 
