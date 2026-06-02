@@ -7,10 +7,10 @@ public class Voz {
     private static final int[] OITAVAS_BASE = {6, 5, 4, 3};
     private static final int[] VOLUMES_BASE = {100, 80, 60, 40};
     private static final Instrumento[] INSTRUMENTOS_BASE = {
-            new Instrumento("Cravo", 6),
-            new Instrumento("Órgão", 20),
             new Instrumento("Piano", 0),
-            new Instrumento("Fagote", 70)
+            new Instrumento("Órgão", 20),
+            new Instrumento("Cravo", 6),
+            new Instrumento("Fagote", 71)
     };
 
     private final int indice;
