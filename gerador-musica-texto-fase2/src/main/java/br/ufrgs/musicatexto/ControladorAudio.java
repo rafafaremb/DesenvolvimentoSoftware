@@ -88,6 +88,14 @@ public class ControladorAudio {
         return sequencer != null && sequencer.isOpen() && !sequencer.isRunning();
     }
 
+    public long getPosicaoAtual() {
+        return sequencer != null ? sequencer.getTickPosition() : 0;
+    }
+
+    public long getDuracaoTotal() {
+        return sequencer != null ? sequencer.getTickLength() : 1;
+    }
+
     public void salvarMIDI(SequenciaMusical sequencia, File arquivo) throws InvalidMidiDataException, IOException {
         Sequence sequence = criarSequenceMIDI(sequencia);
         MidiSystem.write(sequence, 1, arquivo);

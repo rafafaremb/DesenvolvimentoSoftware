@@ -170,9 +170,13 @@ public class InterfaceUsuario extends JFrame {
                 for (JProgressBar b : barrasVoz) b.setValue(100);
                 return;
             }
-            for (JProgressBar b : barrasVoz) {
-                int val = Math.min(100, b.getValue() + 2);
-                b.setValue(val);
+            long posicao = controladorAudio.getPosicaoAtual();
+            long total = controladorAudio.getDuracaoTotal();
+            if (total > 0) {
+                int percent = (int) (posicao * 100 / total);
+                for (JProgressBar b : barrasVoz) {
+                    b.setValue(Math.min(100, percent));
+                }
             }
         });
 
