@@ -4,7 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MapeadorTextoMusical {
-    private static final Pattern PADRAO_ATRASO = Pattern.compile("^\\s*\\[(\\d+)]\\s*");
+    private static final Pattern PADRAO_ATRASO = Pattern.compile("^\\s*\\[(\\d+)]\\s");
 
     private int bpmAtual;
 
@@ -64,6 +64,7 @@ public class MapeadorTextoMusical {
 
     private void mapearCaractere(char c, Voz voz) {
         switch (c) {
+            // RF06: letras maiúsculas A-H → notas
             case 'A' -> adicionarNotaPorNome("Lá", 9, voz);
             case 'B' -> adicionarNotaPorNome("Si", 11, voz);
             case 'C' -> adicionarNotaPorNome("Dó", 0, voz);
@@ -73,6 +74,7 @@ public class MapeadorTextoMusical {
             case 'G' -> adicionarNotaPorNome("Sol", 7, voz);
             case 'H' -> adicionarNotaPorNome("Si Bemol", 10, voz);
 
+            // RF08: letras minúsculas a-h → pausa
             case 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' -> voz.adicionarPausa();
 
             case ' ' -> voz.dobrarVolume();
@@ -81,36 +83,22 @@ public class MapeadorTextoMusical {
 
             case '!' -> voz.setInstrumentoAtual(new Instrumento("Harmônica", 22));
             case ';' -> voz.setInstrumentoAtual(new Instrumento("Tubular Bells", 15));
-            case ',' -> voz.setInstrumentoAtual(new Instrumento("Church Organ", 20));
+            case ',' -> voz.setInstrumentoAtual(new Instrumento("Church Organ", 19));
 
             case '>' -> aumentarBPM();
             case '<' -> diminuirBPM();
 
-            case 'O', 'o', 'I', 'i', 'U', 'u' -> voz.setInstrumentoAtual(new Instrumento("Gaita de Foles", 110));
-
-            default -> tratarDefault(c, voz);
-        }
-    }
-
-    private void tratarDefault(char c, Voz voz) {
-        if (Character.isDigit(c)) {
-            int digito = Character.getNumericValue(c);
-
-            if (digito % 2 == 1) {
-                voz.setInstrumentoAtual(new Instrumento("Tubular Bells", 15));
-            } else {
-                int novoCodigo = (voz.getInstrumentoAtual().getCodigoMIDI() + digito) % 128;
-                voz.setInstrumentoAtual(new Instrumento("GM " + novoCodigo, novoCodigo));
+            // RF21/RF22: qualquer outra letra → repetir nota ou pausar; else → pausa
+            default -> {
+                if (Character.isLetter(c)) {
+                    voz.repetirUltimaNotaOuPausar(); // RF21
+                } else {
+                    voz.adicionarPausa(); // RF22
+                }
             }
-            return;
-        }
-
-        if (Character.isLetter(c)) {
-            voz.repetirUltimaNotaOuPausar();
-        } else {
-            voz.adicionarPausa();
         }
     }
+
 
     private void adicionarNotaPorNome(String nome, int semitom, Voz voz) {
         int midiNumber = calcularMidiNumber(semitom, voz.getOitavaAtual());

@@ -69,8 +69,6 @@ public class Voz {
     public void aumentarOitava() {
         if (oitavaAtual < 9) {
             oitavaAtual++;
-        } else {
-            resetarOitava();
         }
     }
 
