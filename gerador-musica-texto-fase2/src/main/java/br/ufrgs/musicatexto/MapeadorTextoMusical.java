@@ -8,28 +8,42 @@ public class MapeadorTextoMusical {
 
     private int bpmAtual;
 
-    public SequenciaMusical interpretarTexto(String texto, int bpmInicial) {
+    public SequenciaMusical interpretarTexto(String texto, int bpmInicial, int volumeVoz0, int oitavaVoz0, int instrumentoVoz0) {
         bpmAtual = Math.max(20, Math.min(300, bpmInicial));
         SequenciaMusical sequencia = new SequenciaMusical(bpmAtual);
-
         String[] linhas = texto.split("\\R");
-
         int indiceVoz = 0;
         for (String linha : linhas) {
-            if (linha == null || linha.trim().isEmpty()) {
-                continue;
+            if (linha == null || linha.trim().isEmpty()) continue;
+
+            Voz voz;
+            if (indiceVoz == 0) {
+                voz = new Voz(0, volumeVoz0, oitavaVoz0,
+                        new Instrumento(obterNomeInstrumento(instrumentoVoz0), instrumentoVoz0));
+            } else {
+                voz = new Voz(indiceVoz);
             }
 
-            Voz voz = processarLinha(linha, indiceVoz);
+            processarLinha(linha, voz);
             sequencia.adicionarVoz(voz);
             indiceVoz++;
         }
-
         return sequencia;
     }
 
-    private Voz processarLinha(String linha, int indiceVoz) {
-        Voz voz = new Voz(indiceVoz);
+    private String obterNomeInstrumento(int codigo) {
+        return switch (codigo) {
+            case 6  -> "Cravo";
+            case 20 -> "Órgão";
+            case 71 -> "Fagote";
+            case 22 -> "Harmônica";
+            case 15 -> "Tubular Bells";
+            case 19 -> "Church Organ";
+            default -> "Piano";
+        };
+    }
+
+    private void processarLinha(String linha, Voz voz) {
         int atraso = parsearAtraso(linha);
         voz.setAtrasoEntrada(atraso);
 
@@ -46,8 +60,6 @@ public class MapeadorTextoMusical {
 
             mapearCaractere(c, voz);
         }
-
-        return voz;
     }
 
     private int parsearAtraso(String linha) {
@@ -64,7 +76,6 @@ public class MapeadorTextoMusical {
 
     private void mapearCaractere(char c, Voz voz) {
         switch (c) {
-            // RF06: letras maiúsculas A-H → notas
             case 'A' -> adicionarNotaPorNome("Lá", 9, voz);
             case 'B' -> adicionarNotaPorNome("Si", 11, voz);
             case 'C' -> adicionarNotaPorNome("Dó", 0, voz);
@@ -73,32 +84,24 @@ public class MapeadorTextoMusical {
             case 'F' -> adicionarNotaPorNome("Fá", 5, voz);
             case 'G' -> adicionarNotaPorNome("Sol", 7, voz);
             case 'H' -> adicionarNotaPorNome("Si Bemol", 10, voz);
-
-            // RF08: letras minúsculas a-h → pausa
             case 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' -> voz.adicionarPausa();
-
             case ' ' -> voz.dobrarVolume();
             case '?' -> voz.aumentarOitava();
             case 'V' -> voz.diminuirOitava();
-
             case '!' -> voz.setInstrumentoAtual(new Instrumento("Harmônica", 22));
             case ';' -> voz.setInstrumentoAtual(new Instrumento("Tubular Bells", 15));
             case ',' -> voz.setInstrumentoAtual(new Instrumento("Church Organ", 19));
-
             case '>' -> aumentarBPM();
             case '<' -> diminuirBPM();
-
-            // RF21/RF22: qualquer outra letra → repetir nota ou pausar; else → pausa
             default -> {
                 if (Character.isLetter(c)) {
-                    voz.repetirUltimaNotaOuPausar(); // RF21
+                    voz.repetirUltimaNotaOuPausar();
                 } else {
-                    voz.adicionarPausa(); // RF22
+                    voz.adicionarPausa();
                 }
             }
         }
     }
-
 
     private void adicionarNotaPorNome(String nome, int semitom, Voz voz) {
         int midiNumber = calcularMidiNumber(semitom, voz.getOitavaAtual());
@@ -107,7 +110,7 @@ public class MapeadorTextoMusical {
     }
 
     private int calcularMidiNumber(int semitom, int oitava) {
-        return 12 * (oitava + 1) + semitom;
+        return Math.min(127, 12 * (oitava + 1) + semitom);
     }
 
     private void aumentarBPM() {

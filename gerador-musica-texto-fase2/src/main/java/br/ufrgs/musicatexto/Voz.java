@@ -36,6 +36,16 @@ public class Voz {
         this.atrasoEntrada = 0;
     }
 
+    public Voz(int indice, int volumeInicial, int oitavaInicial, Instrumento instrumento) {
+        this.indice = indice;
+        this.oitavaBase = oitavaInicial;
+        this.oitavaAtual = oitavaInicial;
+        this.volumeAtual = volumeInicial;
+        this.instrumentoAtual = instrumento;
+        this.atrasoEntrada = 0;
+        this.ultimoCaractereEraNota = false;
+    }
+
     public void adicionarNota(Nota nota) {
         eventos.add(nota);
         if (!nota.isPausa()) {
@@ -116,6 +126,14 @@ public class Voz {
 
     public void setAtrasoEntrada(int atrasoEntrada) {
         this.atrasoEntrada = Math.max(0, atrasoEntrada);
+    }
+
+    public void setVolumeAtual(int volume) {
+        this.volumeAtual = Math.max(0, Math.min(127, volume));
+    }
+
+    public void setOitavaAtual(int oitava) {
+        this.oitavaAtual = Math.max(0, Math.min(9, oitava));
     }
 
     public List<Nota> getEventos() {

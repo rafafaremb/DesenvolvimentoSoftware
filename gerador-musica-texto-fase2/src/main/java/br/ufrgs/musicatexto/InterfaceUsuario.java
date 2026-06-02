@@ -14,11 +14,9 @@ import java.util.List;
 
 public class InterfaceUsuario extends JFrame {
 
-    // Componentes da tela principal
     private final JTextArea campoTexto = new JTextArea();
     private final JLabel areaStatus = new JLabel("Aguardando entrada...");
 
-    // Seletores de configuração global
     private final JComboBox<String> seletorInstrumento = new JComboBox<>(new String[]{
             "Piano (GM 0)", "Cravo (GM 6)", "Órgão (GM 20)", "Fagote (GM 71)",
             "Harmônica (GM 22)", "Tubular Bells (GM 15)", "Church Organ (GM 19)"
@@ -36,7 +34,6 @@ public class InterfaceUsuario extends JFrame {
     private final JButton botaoLimpar = new JButton("Limpar");
     private final JButton botaoSalvarMIDI = new JButton("Salvar MIDI");
 
-    // Componentes da tela de execução
     private final JDialog dialogExecucao = new JDialog(this, "Reprodução", false);
     private final JLabel labelEstado = new JLabel("REPRODUZINDO...");
     private final JLabel labelBPMAtual = new JLabel("BPM ATUAL: 120");
@@ -47,7 +44,6 @@ public class InterfaceUsuario extends JFrame {
     private final List<JLabel> labelsVoz = new ArrayList<>();
     private Timer timerProgresso;
 
-    // Serviços
     private final GerenciadorArquivo gerenciadorArquivo = new GerenciadorArquivo();
     private final MapeadorTextoMusical mapeador = new MapeadorTextoMusical();
     private final ControladorAudio controladorAudio = new ControladorAudio();
@@ -61,7 +57,6 @@ public class InterfaceUsuario extends JFrame {
         configurarEventos();
     }
 
-    // Tela principal
     private void configurarJanelaPrincipal() {
         setTitle("Gerador de Música por Texto - Fase 2");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -71,12 +66,10 @@ public class InterfaceUsuario extends JFrame {
         campoTexto.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 15));
         campoTexto.setText("[0] G A H C\n[4] D E F G\n[8] C D E F");
 
-        // Painel superior: carregar arquivo
         JPanel painelCarregar = new JPanel(new FlowLayout(FlowLayout.LEFT));
         painelCarregar.add(botaoCarregar);
         painelCarregar.add(botaoSalvarTexto);
 
-        // Painel de configurações
         JPanel painelConfig = new JPanel(new FlowLayout(FlowLayout.LEFT));
         painelConfig.setBorder(BorderFactory.createTitledBorder("Configurações iniciais"));
         seletorBPM.setSelectedItem(120);
@@ -87,7 +80,6 @@ public class InterfaceUsuario extends JFrame {
         painelConfig.add(new JLabel("BPM:"));         painelConfig.add(seletorBPM);
         painelConfig.add(new JLabel("Oitava:"));      painelConfig.add(seletorOitava);
 
-        // Painel de ações
         JPanel painelTopo = new JPanel(new BorderLayout());
         painelTopo.add(painelCarregar, BorderLayout.NORTH);
         painelTopo.add(painelConfig, BorderLayout.CENTER);
@@ -106,32 +98,31 @@ public class InterfaceUsuario extends JFrame {
         add(painelSul, BorderLayout.SOUTH);
     }
 
-    //Tela de execução
     private void configurarDialogExecucao() {
-    dialogExecucao.setSize(500, 400);
-    dialogExecucao.setLocationRelativeTo(this);
-    dialogExecucao.setLayout(new BorderLayout(8, 8));
+        dialogExecucao.setSize(500, 400);
+        dialogExecucao.setLocationRelativeTo(this);
+        dialogExecucao.setLayout(new BorderLayout(8, 8));
 
-    labelEstado.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-    labelEstado.setHorizontalAlignment(SwingConstants.CENTER);
+        labelEstado.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        labelEstado.setHorizontalAlignment(SwingConstants.CENTER);
 
-    painelVozes.setLayout(new BoxLayout(painelVozes, BoxLayout.Y_AXIS));
+        painelVozes.setLayout(new BoxLayout(painelVozes, BoxLayout.Y_AXIS));
 
-    JPanel painelBPM = new JPanel(new FlowLayout(FlowLayout.CENTER));
-    painelBPM.add(labelBPMAtual);
+        JPanel painelBPM = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        painelBPM.add(labelBPMAtual);
 
-    JPanel painelControles = new JPanel(new FlowLayout(FlowLayout.CENTER));
-    painelControles.add(botaoPausarRetomar);
-    painelControles.add(botaoParar);
+        JPanel painelControles = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        painelControles.add(botaoPausarRetomar);
+        painelControles.add(botaoParar);
 
-    JPanel painelSul = new JPanel(new BorderLayout());
-    painelSul.add(painelBPM, BorderLayout.NORTH);
-    painelSul.add(painelControles, BorderLayout.CENTER);
+        JPanel painelSul = new JPanel(new BorderLayout());
+        painelSul.add(painelBPM, BorderLayout.NORTH);
+        painelSul.add(painelControles, BorderLayout.CENTER);
 
-    dialogExecucao.add(labelEstado, BorderLayout.NORTH);
-    dialogExecucao.add(new JScrollPane(painelVozes), BorderLayout.CENTER);
-    dialogExecucao.add(painelSul, BorderLayout.SOUTH);
-}
+        dialogExecucao.add(labelEstado, BorderLayout.NORTH);
+        dialogExecucao.add(new JScrollPane(painelVozes), BorderLayout.CENTER);
+        dialogExecucao.add(painelSul, BorderLayout.SOUTH);
+    }
 
     private void atualizarPainelVozes(SequenciaMusical sequencia) {
         painelVozes.removeAll();
@@ -179,8 +170,6 @@ public class InterfaceUsuario extends JFrame {
                 for (JProgressBar b : barrasVoz) b.setValue(100);
                 return;
             }
-
-            // Avança as barras visualmente de forma simples
             for (JProgressBar b : barrasVoz) {
                 int val = Math.min(100, b.getValue() + 2);
                 b.setValue(val);
@@ -190,7 +179,6 @@ public class InterfaceUsuario extends JFrame {
         timerProgresso.start();
     }
 
-    //Eventos
     private void configurarEventos() {
         botaoCarregar.addActionListener(e -> carregarTXT());
         botaoSalvarTexto.addActionListener(e -> salvarTexto());
@@ -228,10 +216,12 @@ public class InterfaceUsuario extends JFrame {
     private void gerarETocar() {
         try {
             int bpm = (Integer) seletorBPM.getSelectedItem();
-            ultimaSequencia = mapeador.interpretarTexto(campoTexto.getText(), bpm);
+            int volume = (Integer) seletorVolume.getSelectedItem();
+            int oitava = (Integer) seletorOitava.getSelectedItem();
+            int codigoInstrumento = obterCodigoInstrumento((String) seletorInstrumento.getSelectedItem());
+            ultimaSequencia = mapeador.interpretarTexto(campoTexto.getText(), bpm, volume, oitava, codigoInstrumento);
             controladorAudio.reproduzir(ultimaSequencia);
 
-            // Configura e exibe a tela de execução
             atualizarPainelVozes(ultimaSequencia);
             labelEstado.setText("REPRODUZINDO...");
             labelBPMAtual.setText("BPM ATUAL: " + bpm);
@@ -248,6 +238,18 @@ public class InterfaceUsuario extends JFrame {
         } catch (Exception ex) {
             mostrarErro("Erro ao gerar música: " + ex.getMessage());
         }
+    }
+
+    private int obterCodigoInstrumento(String nome) {
+        return switch (nome) {
+            case "Cravo (GM 6)"          -> 6;
+            case "Órgão (GM 20)"         -> 20;
+            case "Fagote (GM 71)"        -> 71;
+            case "Harmônica (GM 22)"     -> 22;
+            case "Tubular Bells (GM 15)" -> 15;
+            case "Church Organ (GM 19)"  -> 19;
+            default                      -> 0;
+        };
     }
 
     private void alternarPausaRetomar() {
@@ -284,7 +286,10 @@ public class InterfaceUsuario extends JFrame {
         try {
             if (ultimaSequencia == null) {
                 int bpm = (Integer) seletorBPM.getSelectedItem();
-                ultimaSequencia = mapeador.interpretarTexto(campoTexto.getText(), bpm);
+                int volume = (Integer) seletorVolume.getSelectedItem();
+                int oitava = (Integer) seletorOitava.getSelectedItem();
+                int codigoInstrumento = obterCodigoInstrumento((String) seletorInstrumento.getSelectedItem());
+                ultimaSequencia = mapeador.interpretarTexto(campoTexto.getText(), bpm, volume, oitava, codigoInstrumento);
             }
 
             JFileChooser chooser = new JFileChooser();
