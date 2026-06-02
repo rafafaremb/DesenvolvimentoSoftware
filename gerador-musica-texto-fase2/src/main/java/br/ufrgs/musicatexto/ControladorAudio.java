@@ -16,6 +16,8 @@ public class ControladorAudio {
 
         int canal = 0;
         for (Voz voz : sequencia.getVozes()) {
+            if (canal == 9) canal++; // canal 9 reservado para percussão
+
             Track track = sequence.createTrack();
             adicionarProgramChange(track, canal, voz.getInstrumentoAtual().getCodigoMIDI(), 0);
 
@@ -38,7 +40,7 @@ public class ControladorAudio {
     }
 
     public void reproduzir(SequenciaMusical sequencia) throws MidiUnavailableException, InvalidMidiDataException {
-        parar();
+        pararReproducao();
 
         Sequence sequence = criarSequenceMIDI(sequencia);
         sequencer = MidiSystem.getSequencer();
@@ -52,7 +54,22 @@ public class ControladorAudio {
         sequencer.start();
     }
 
-    public void parar() {
+    /** Pausa a reprodução preservando a posição atual (RF26). */
+    public void pausarReproducao() {
+        if (sequencer != null && sequencer.isRunning()) {
+            sequencer.stop();
+        }
+    }
+
+    /** Retoma a reprodução a partir do ponto pausado (RF26). */
+    public void retomarReproducao() {
+        if (sequencer != null && sequencer.isOpen() && !sequencer.isRunning()) {
+            sequencer.start();
+        }
+    }
+
+    /** Interrompe completamente e fecha o sequenciador. */
+    public void pararReproducao() {
         if (sequencer != null) {
             if (sequencer.isRunning()) {
                 sequencer.stop();
@@ -61,6 +78,14 @@ public class ControladorAudio {
                 sequencer.close();
             }
         }
+    }
+
+    public boolean isReproduzindo() {
+        return sequencer != null && sequencer.isRunning();
+    }
+
+    public boolean isPausado() {
+        return sequencer != null && sequencer.isOpen() && !sequencer.isRunning();
     }
 
     public void salvarMIDI(SequenciaMusical sequencia, File arquivo) throws InvalidMidiDataException, IOException {
