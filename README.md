@@ -22,14 +22,14 @@ Requisitos:
 - Maven instalado.
 
 
-# Verificando se o Java está instalado:
+## Verificando se o Java está instalado:
 ```bash
 java -version
 ```
 Se não estiver instalado, baixe em: https://adoptium.net
 
 
-# Instalando o Maven:
+## Instalando o Maven:
 O Maven não vem instalado por padrão no Windows. Verifique se já está disponível:
 ```bash
 mvn --version
