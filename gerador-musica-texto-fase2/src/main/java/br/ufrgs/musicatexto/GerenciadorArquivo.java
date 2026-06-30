@@ -15,7 +15,10 @@ public class GerenciadorArquivo {
 
     public void salvarArquivoTXT(String texto) throws IOException {
         if (arquivoTXTAtual == null) {
-            throw new IOException("Nenhum arquivo TXT foi carregado.");
+            throw new IllegalStateException("Nenhum arquivo TXT foi carregado. Carregue um arquivo antes de salvar.");
+        }
+        if (texto == null || texto.isBlank()) {
+            throw new IllegalArgumentException("O texto a ser salvo está vazio.");
         }
         Files.writeString(arquivoTXTAtual.toPath(), texto, StandardCharsets.UTF_8);
     }

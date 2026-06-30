@@ -6,11 +6,8 @@ import java.util.List;
 public class Voz {
     private static final int[] OITAVAS_BASE = {6, 5, 4, 3};
     private static final int[] VOLUMES_BASE = {100, 80, 60, 40};
-    private static final Instrumento[] INSTRUMENTOS_BASE = {
-            new Instrumento("Piano", 0),
-            new Instrumento("Órgão", 20),
-            new Instrumento("Cravo", 6),
-            new Instrumento("Fagote", 71)
+    private static final InstrumentoGM[] INSTRUMENTOS_BASE = {
+            InstrumentoGM.PIANO, InstrumentoGM.ORGAO, InstrumentoGM.CRAVO, InstrumentoGM.FAGOTE
     };
 
     private final int indice;
@@ -29,10 +26,7 @@ public class Voz {
         this.oitavaBase = OITAVAS_BASE[pos];
         this.oitavaAtual = this.oitavaBase;
         this.volumeAtual = VOLUMES_BASE[pos];
-        this.instrumentoAtual = new Instrumento(
-                INSTRUMENTOS_BASE[pos].getNome(),
-                INSTRUMENTOS_BASE[pos].getCodigoMIDI()
-        );
+        this.instrumentoAtual = INSTRUMENTOS_BASE[pos].criarInstancia();
         this.atrasoEntrada = 0;
     }
 
@@ -96,47 +90,15 @@ public class Voz {
         oitavaAtual = oitavaBase;
     }
 
-    public int getIndice() {
-        return indice;
-    }
-
-    public int getOitavaBase() {
-        return oitavaBase;
-    }
-
-    public int getOitavaAtual() {
-        return oitavaAtual;
-    }
-
-    public int getVolumeAtual() {
-        return volumeAtual;
-    }
-
-    public Instrumento getInstrumentoAtual() {
-        return instrumentoAtual;
-    }
-
-    public void setInstrumentoAtual(Instrumento instrumentoAtual) {
-        this.instrumentoAtual = instrumentoAtual;
-    }
-
-    public int getAtrasoEntrada() {
-        return atrasoEntrada;
-    }
-
-    public void setAtrasoEntrada(int atrasoEntrada) {
-        this.atrasoEntrada = Math.max(0, atrasoEntrada);
-    }
-
-    public void setVolumeAtual(int volume) {
-        this.volumeAtual = Math.max(0, Math.min(127, volume));
-    }
-
-    public void setOitavaAtual(int oitava) {
-        this.oitavaAtual = Math.max(0, Math.min(9, oitava));
-    }
-
-    public List<Nota> getEventos() {
-        return eventos;
-    }
+    public int getIndice() { return indice; }
+    public int getOitavaBase() { return oitavaBase; }
+    public int getOitavaAtual() { return oitavaAtual; }
+    public int getVolumeAtual() { return volumeAtual; }
+    public Instrumento getInstrumentoAtual() { return instrumentoAtual; }
+    public void setInstrumentoAtual(Instrumento instrumentoAtual) { this.instrumentoAtual = instrumentoAtual; }
+    public int getAtrasoEntrada() { return atrasoEntrada; }
+    public void setAtrasoEntrada(int atrasoEntrada) { this.atrasoEntrada = Math.max(0, atrasoEntrada); }
+    public void setVolumeAtual(int volume) { this.volumeAtual = Math.max(0, Math.min(127, volume)); }
+    public void setOitavaAtual(int oitava) { this.oitavaAtual = Math.max(0, Math.min(9, oitava)); }
+    public List<Nota> getEventos() { return eventos; }
 }

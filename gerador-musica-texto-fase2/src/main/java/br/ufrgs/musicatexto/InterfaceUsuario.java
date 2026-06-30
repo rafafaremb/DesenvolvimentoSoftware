@@ -7,20 +7,21 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class InterfaceUsuario extends JFrame {
 
+    private final ControladorInterface controlador = new ControladorInterface();
+
     private final JTextArea campoTexto = new JTextArea();
     private final JLabel areaStatus = new JLabel("Aguardando entrada...");
 
-    private final JComboBox<String> seletorInstrumento = new JComboBox<>(new String[]{
-            "Piano (GM 0)", "Cravo (GM 6)", "Órgão (GM 20)", "Fagote (GM 71)",
-            "Harmônica (GM 22)", "Tubular Bells (GM 15)", "Church Organ (GM 19)"
-    });
+    private final JComboBox<String> seletorInstrumento = new JComboBox<>(
+            java.util.Arrays.stream(InstrumentoGM.values())
+                    .map(InstrumentoGM::getRotuloExibicao)
+                    .toArray(String[]::new)
+    );
     private final JComboBox<Integer> seletorVolume = new JComboBox<>(
             new Integer[]{20, 40, 60, 80, 100, 120, 127});
     private final JComboBox<Integer> seletorBPM = new JComboBox<>(
@@ -44,11 +45,6 @@ public class InterfaceUsuario extends JFrame {
     private final List<JLabel> labelsVoz = new ArrayList<>();
     private Timer timerProgresso;
 
-    private final GerenciadorArquivo gerenciadorArquivo = new GerenciadorArquivo();
-    private final MapeadorTextoMusical mapeador = new MapeadorTextoMusical();
-    private final ControladorAudio controladorAudio = new ControladorAudio();
-
-    private SequenciaMusical ultimaSequencia;
     private boolean pausado = false;
 
     public InterfaceUsuario() {
@@ -58,7 +54,7 @@ public class InterfaceUsuario extends JFrame {
     }
 
     private void configurarJanelaPrincipal() {
-        setTitle("Gerador de Música por Texto - Fase 2");
+        setTitle("Gerador de Música por Texto - Fase 3 (Refatorada)");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(900, 640);
         setLocationRelativeTo(null);
@@ -163,15 +159,15 @@ public class InterfaceUsuario extends JFrame {
         if (timerProgresso != null) timerProgresso.stop();
 
         timerProgresso = new Timer(200, e -> {
-            if (!controladorAudio.isReproduzindo() && !controladorAudio.isPausado()) {
+            if (!controlador.isReproduzindo() && !controlador.isPausado()) {
                 timerProgresso.stop();
                 labelEstado.setText("CONCLUÍDO");
                 botaoPausarRetomar.setEnabled(false);
                 for (JProgressBar b : barrasVoz) b.setValue(100);
                 return;
             }
-            long posicao = controladorAudio.getPosicaoAtual();
-            long total = controladorAudio.getDuracaoTotal();
+            long posicao = controlador.getPosicaoAtual();
+            long total = controlador.getDuracaoTotal();
             if (total > 0) {
                 int percent = (int) (posicao * 100 / total);
                 for (JProgressBar b : barrasVoz) {
@@ -193,13 +189,21 @@ public class InterfaceUsuario extends JFrame {
         botaoParar.addActionListener(e -> parar());
     }
 
+    private ConfiguracaoInicial lerConfiguracaoDaInterface() {
+        int bpm = (Integer) seletorBPM.getSelectedItem();
+        int volume = (Integer) seletorVolume.getSelectedItem();
+        int oitava = (Integer) seletorOitava.getSelectedItem();
+        InstrumentoGM instrumento = InstrumentoGM.porRotulo((String) seletorInstrumento.getSelectedItem());
+        return new ConfiguracaoInicial(bpm, volume, oitava, instrumento.criarInstancia());
+    }
+
     private void carregarTXT() {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileFilter(new FileNameExtensionFilter("Arquivos de texto (*.txt)", "txt"));
 
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             try {
-                String texto = gerenciadorArquivo.lerArquivoTXT(chooser.getSelectedFile());
+                String texto = controlador.carregarTXT(chooser.getSelectedFile());
                 campoTexto.setText(texto);
                 mostrarMensagem("Arquivo TXT carregado: " + chooser.getSelectedFile().getName());
             } catch (IOException ex) {
@@ -210,25 +214,30 @@ public class InterfaceUsuario extends JFrame {
 
     private void salvarTexto() {
         try {
-            gerenciadorArquivo.salvarArquivoTXT(campoTexto.getText());
+            controlador.salvarTexto(campoTexto.getText());
             mostrarMensagem("Texto salvo no arquivo original.");
+        } catch (IllegalStateException ex) {
+            mostrarErro(ex.getMessage());
         } catch (IOException ex) {
             mostrarErro("Erro ao salvar TXT: " + ex.getMessage());
         }
     }
 
     private void gerarETocar() {
-        try {
-            int bpm = (Integer) seletorBPM.getSelectedItem();
-            int volume = (Integer) seletorVolume.getSelectedItem();
-            int oitava = (Integer) seletorOitava.getSelectedItem();
-            int codigoInstrumento = obterCodigoInstrumento((String) seletorInstrumento.getSelectedItem());
-            ultimaSequencia = mapeador.interpretarTexto(campoTexto.getText(), bpm, volume, oitava, codigoInstrumento);
-            controladorAudio.reproduzir(ultimaSequencia);
+        if (campoTexto.getText().trim().isEmpty()) {
+            mostrarErro("O campo de texto está vazio. Insira um texto antes de gerar a música.");
+            return;
+        }
 
-            atualizarPainelVozes(ultimaSequencia);
+        try {
+            ConfiguracaoInicial config = lerConfiguracaoDaInterface();
+            SequenciaMusical sequencia = controlador.gerarSequencia(campoTexto.getText(), config);
+
+            controlador.iniciarReproducao();
+
+            atualizarPainelVozes(sequencia);
             labelEstado.setText("REPRODUZINDO...");
-            labelBPMAtual.setText("BPM ATUAL: " + bpm);
+            labelBPMAtual.setText("BPM ATUAL: " + config.getBpmInicial());
             botaoPausarRetomar.setText("Pausar");
             botaoPausarRetomar.setEnabled(true);
             pausado = false;
@@ -236,7 +245,7 @@ public class InterfaceUsuario extends JFrame {
             iniciarTimerProgresso();
             dialogExecucao.setVisible(true);
 
-            mostrarMensagem("Reproduzindo " + ultimaSequencia.getVozes().size() + " voz(es).");
+            mostrarMensagem("Reproduzindo " + sequencia.getVozes().size() + " voz(es).");
         } catch (MidiUnavailableException | InvalidMidiDataException ex) {
             mostrarErro("Erro MIDI: " + ex.getMessage());
         } catch (Exception ex) {
@@ -244,27 +253,15 @@ public class InterfaceUsuario extends JFrame {
         }
     }
 
-    private int obterCodigoInstrumento(String nome) {
-        return switch (nome) {
-            case "Cravo (GM 6)"          -> 6;
-            case "Órgão (GM 20)"         -> 20;
-            case "Fagote (GM 71)"        -> 71;
-            case "Harmônica (GM 22)"     -> 22;
-            case "Tubular Bells (GM 15)" -> 15;
-            case "Church Organ (GM 19)"  -> 19;
-            default                      -> 0;
-        };
-    }
-
     private void alternarPausaRetomar() {
         if (!pausado) {
-            controladorAudio.pausarReproducao();
+            controlador.pausarOuRetomar(false);
             pausado = true;
             botaoPausarRetomar.setText("Retomar");
             labelEstado.setText("PAUSADO");
             mostrarMensagem("Reprodução pausada.");
         } else {
-            controladorAudio.retomarReproducao();
+            controlador.pausarOuRetomar(true);
             pausado = false;
             botaoPausarRetomar.setText("Pausar");
             labelEstado.setText("REPRODUZINDO...");
@@ -274,7 +271,7 @@ public class InterfaceUsuario extends JFrame {
 
     private void parar() {
         if (timerProgresso != null) timerProgresso.stop();
-        controladorAudio.pararReproducao();
+        controlador.parar();
         pausado = false;
         dialogExecucao.setVisible(false);
         mostrarMensagem("Reprodução interrompida.");
@@ -282,22 +279,19 @@ public class InterfaceUsuario extends JFrame {
 
     private void limpar() {
         campoTexto.setText("");
-        ultimaSequencia = null;
+        controlador.limparSequencia();
         mostrarMensagem("Campo de texto limpo.");
     }
 
     private void salvarMIDI() {
         try {
-            if (ultimaSequencia == null) {
-                int bpm = (Integer) seletorBPM.getSelectedItem();
-                int volume = (Integer) seletorVolume.getSelectedItem();
-                int oitava = (Integer) seletorOitava.getSelectedItem();
-                int codigoInstrumento = obterCodigoInstrumento((String) seletorInstrumento.getSelectedItem());
-                ultimaSequencia = mapeador.interpretarTexto(campoTexto.getText(), bpm, volume, oitava, codigoInstrumento);
+            if (controlador.getUltimaSequencia() == null) {
+                ConfiguracaoInicial config = lerConfiguracaoDaInterface();
+                controlador.gerarSequencia(campoTexto.getText(), config);
             }
 
             JFileChooser chooser = new JFileChooser();
-            chooser.setSelectedFile(new File(gerarNomeMIDIPadrao()));
+            chooser.setSelectedFile(new File(controlador.gerarNomeMIDIPadrao()));
             chooser.setFileFilter(new FileNameExtensionFilter("Arquivo MIDI (*.mid)", "mid"));
 
             if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
@@ -305,17 +299,16 @@ public class InterfaceUsuario extends JFrame {
                 if (!arquivo.getName().toLowerCase().endsWith(".mid")) {
                     arquivo = new File(arquivo.getParentFile(), arquivo.getName() + ".mid");
                 }
-                controladorAudio.salvarMIDI(ultimaSequencia, arquivo);
+                controlador.salvarMIDI(arquivo);
                 mostrarMensagem("MIDI salvo em: " + arquivo.getAbsolutePath());
             }
-        } catch (Exception ex) {
+        } catch (IllegalStateException ex) {
+            mostrarErro(ex.getMessage());
+        } catch (InvalidMidiDataException | IOException ex) {
             mostrarErro("Erro ao salvar MIDI: " + ex.getMessage());
+        } catch (Exception ex) {
+            mostrarErro("Erro: " + ex.getMessage());
         }
-    }
-
-    private String gerarNomeMIDIPadrao() {
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss");
-        return "musica_" + LocalDateTime.now().format(fmt) + ".mid";
     }
 
     private void mostrarMensagem(String mensagem) {
